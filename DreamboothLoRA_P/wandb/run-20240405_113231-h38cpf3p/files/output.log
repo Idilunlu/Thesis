@@ -1,0 +1,66 @@
+04/05/2024 11:32:32 - INFO - __main__ - ***** Running training *****
+04/05/2024 11:32:32 - INFO - __main__ -   Num examples = 20
+04/05/2024 11:32:32 - INFO - __main__ -   Num batches each epoch = 20
+04/05/2024 11:32:32 - INFO - __main__ -   Num Epochs = 400
+04/05/2024 11:32:32 - INFO - __main__ -   Instantaneous batch size per device = 1
+04/05/2024 11:32:32 - INFO - __main__ -   Total train batch size (w. parallel, distributed & accumulation) = 4
+04/05/2024 11:32:32 - INFO - __main__ -   Gradient Accumulation steps = 4
+04/05/2024 11:32:32 - INFO - __main__ -   Total optimization steps = 2000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Steps:   0%|▎                                                                                                                             | 5/2000 [23:30<195:00:34, 351.90s/it, loss=0.00754, lr=0.0001]04/05/2024 11:56:02 - INFO - __main__ - Running validation...
+ Generating 4 images with prompt: a photo of LUAD black formalin.
+Fetching 16 files: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 14481.84it/s]
+{'scaling_factor'} was not found in config. Values will be initialized to default values.                                                                                         | 0/16 [00:00<?, ?it/s]
+{'lower_order_final', 'thresholding', 'solver_type', 'dynamic_thresholding_ratio', 'solver_order', 'sample_max_value', 'algorithm_type'} was not found in config. Values will be initialized to default values.
+Traceback (most recent call last):
+  File "/Users/idilunlu/Desktop/diff_path_repo/Diffusion_pathology/train_dreambooth_lora.py", line 1224, in <module>
+    main(args)
+  File "/Users/idilunlu/Desktop/diff_path_repo/Diffusion_pathology/train_dreambooth_lora.py", line 1125, in main
+    images = pipeline(
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py", line 633, in __call__
+    image = self.decode_latents(latents)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py", line 370, in decode_latents
+    image = self.vae.decode(latents).sample
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/diffusers/models/autoencoder_kl.py", line 152, in decode
+    decoded = self._decode(z).sample
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/diffusers/models/autoencoder_kl.py", line 124, in _decode
+    dec = self.decoder(z)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/diffusers/models/vae.py", line 188, in forward
+    sample = up_block(sample)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/diffusers/models/unet_2d_blocks.py", line 1714, in forward
+    hidden_states = resnet(hidden_states, temb=None)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/diffusers/models/resnet.py", line 485, in forward
+    hidden_states = self.nonlinearity(hidden_states)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/torch/nn/modules/activation.py", line 395, in forward
+    return F.silu(input, inplace=self.inplace)
+  File "/Users/idilunlu/miniconda3/envs/path/lib/python3.9/site-packages/torch/nn/functional.py", line 2059, in silu
+    return torch._C._nn.silu(input)
+KeyboardInterrupt

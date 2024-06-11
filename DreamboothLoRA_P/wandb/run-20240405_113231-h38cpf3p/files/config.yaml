@@ -1,0 +1,181 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.13.9
+    framework: huggingface
+    huggingface_version: 4.26.0
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.9.19
+    start_time: 1712331151.470641
+    t:
+      1:
+      - 1
+      - 11
+      - 41
+      - 49
+      - 51
+      - 55
+      - 71
+      2:
+      - 1
+      - 11
+      - 41
+      - 49
+      - 51
+      - 55
+      - 71
+      3:
+      - 23
+      4: 3.9.19
+      5: 0.13.9
+      6: 4.26.0
+      8:
+      - 4
+      - 5
+adam_beta1:
+  desc: null
+  value: 0.9
+adam_beta2:
+  desc: null
+  value: 0.999
+adam_epsilon:
+  desc: null
+  value: 1.0e-08
+adam_weight_decay:
+  desc: null
+  value: 0.01
+allow_tf32:
+  desc: null
+  value: false
+center_crop:
+  desc: null
+  value: false
+checkpointing_steps:
+  desc: null
+  value: 1000
+class_data_dir:
+  desc: null
+  value: null
+class_prompt:
+  desc: null
+  value: null
+dataloader_num_workers:
+  desc: null
+  value: 4
+enable_xformers_memory_efficient_attention:
+  desc: null
+  value: false
+gradient_accumulation_steps:
+  desc: null
+  value: 4
+gradient_checkpointing:
+  desc: null
+  value: false
+hub_model_id:
+  desc: null
+  value: null
+hub_token:
+  desc: null
+  value: null
+instance_data_dir:
+  desc: null
+  value: LU.ruAD_black_formalin_origin/*.jpg
+instance_prompt:
+  desc: null
+  value: LUAD black formalin
+learning_rate:
+  desc: null
+  value: 0.0001
+local_rank:
+  desc: null
+  value: -1
+logging_dir:
+  desc: null
+  value: logs
+lr_num_cycles:
+  desc: null
+  value: 1
+lr_power:
+  desc: null
+  value: 1.0
+lr_scheduler:
+  desc: null
+  value: constant
+lr_warmup_steps:
+  desc: null
+  value: 0
+max_grad_norm:
+  desc: null
+  value: 1.0
+max_train_steps:
+  desc: null
+  value: 2000
+mixed_precision:
+  desc: null
+  value: null
+num_class_images:
+  desc: null
+  value: 100
+num_train_epochs:
+  desc: null
+  value: 400
+num_validation_images:
+  desc: null
+  value: 4
+output_dir:
+  desc: null
+  value: LUAD_black_formalin
+pretrained_model_name_or_path:
+  desc: null
+  value: stabilityai/stable-diffusion-2-1-base
+prior_generation_precision:
+  desc: null
+  value: null
+prior_loss_weight:
+  desc: null
+  value: 1.0
+push_to_hub:
+  desc: null
+  value: false
+report_to:
+  desc: null
+  value: wandb
+resolution:
+  desc: null
+  value: 512
+resume_from_checkpoint:
+  desc: null
+  value: null
+revision:
+  desc: null
+  value: null
+sample_batch_size:
+  desc: null
+  value: 4
+scale_lr:
+  desc: null
+  value: false
+seed:
+  desc: null
+  value: 0
+tokenizer_name:
+  desc: null
+  value: null
+train_batch_size:
+  desc: null
+  value: 1
+use_8bit_adam:
+  desc: null
+  value: false
+validation_epochs:
+  desc: null
+  value: 1000
+validation_prompt:
+  desc: null
+  value: a photo of LUAD black formalin
+with_prior_preservation:
+  desc: null
+  value: false
