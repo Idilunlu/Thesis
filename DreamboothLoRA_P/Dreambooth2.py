@@ -23,13 +23,16 @@ import logging
 import math
 import os
 import warnings
+
 # from pathlib import Path
 from typing import Optional
 
 import os
 import torch
+
 print("Importing Path")
 from pathlib import Path
+
 print("Path imports successful.")
 # from transformers import AutoTokenizer
 # from transformers.models.ddpm import DDPMScheduler
@@ -37,11 +40,11 @@ print("Path imports successful.")
 from diffusers import UNet2DConditionModel, DDPMScheduler, AutoencoderKL
 
 from huggingface_hub import create_repo, get_full_repo_name, Repository
-#from accelerate import Accelerator
-#from accelerate.utils import is_xformers_available
+
+# from accelerate import Accelerator
+# from accelerate.utils import is_xformers_available
 
 import numpy as np
-import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
 from torch.utils.data import Dataset
@@ -49,8 +52,33 @@ from torch.utils.data import Dataset
 import datasets
 import diffusers
 import transformers
+
+import os
+
+# from pathlib import Path
+# from transformers import AutoTokenizer, DDPMScheduler, AutoencoderKL, UNet2DConditionModel
+from huggingface_hub import create_repo, get_full_repo_name, Repository
+
+# from accelerate import Accelerator
+# from accelerate.utils import is_xformers_available
+from torch.utils.data import Dataset
+from torchvision import transforms
+from PIL import Image
+from transformers import PreTrainedTokenizer
+
+# from transformers import PreTrainedTokenizerFast
+from transformers import AutoTokenizer
+import pandas as pd
+import os
+import random
+import numpy as np
+from glob import glob
+from typing import Callable, Optional, List
+
+
 print("Importing Accelerator...")
 from accelerate import Accelerator
+
 print("Accelerator imported successfully.")
 from accelerate.logging import get_logger
 from accelerate.utils import set_seed
@@ -73,7 +101,6 @@ from tqdm.auto import tqdm
 from transformers import AutoTokenizer, PretrainedConfig
 
 from glob import glob
-import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image
@@ -87,13 +114,13 @@ from tqdm import tqdm
 import h5py
 import sqlite3
 
-import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
+
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
 check_min_version("0.12.0.dev0")
 
@@ -502,21 +529,6 @@ def parse_args(input_args=None):
     return args
 
 
-import torch
-from torch.utils.data import Dataset
-from torchvision import transforms
-from PIL import Image
-from transformers import PreTrainedTokenizer
-#from transformers import PreTrainedTokenizerFast
-from transformers import AutoTokenizer
-import pandas as pd
-import os
-import random
-import numpy as np
-from glob import glob
-from typing import Callable, Optional, List
-
-
 def get_transforms(train=False):
     """
     Takes a list of images and applies the same augmentations to all of them.
@@ -539,6 +551,7 @@ def get_transforms(train=False):
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
     _data_transform = None
+
     def _get_transform(n: int = 3):
         data_transforms = A.Compose(
             [
@@ -547,9 +560,9 @@ def get_transforms(train=False):
                 ToTensorV2(),
             ],
             additional_targets={f"image{i}": "image" for i in range(1, n)},
-
         )
         return data_transforms
+
     def transform_images(images: any):
         nonlocal _data_transform
         if not isinstance(images, list):
@@ -573,13 +586,16 @@ def get_transforms(train=False):
         if len(transformed_images) == 1:
             return transformed_images[0]
         return transformed_images
+
     return transform_images
-    
+
+
 class IdilDataSet(Dataset):
     """
     A dataset to prepare the instance and class images with the prompts for fine-tuning the model.
     It pre-processes the images and tokenizes prompts.
     """
+
     def __init__(
         self,
         csv_path: str,
@@ -589,7 +605,7 @@ class IdilDataSet(Dataset):
         n_patches: int = 250,
         random_selection=False,
         limit: Optional[int] = None,
-        wsi_type: str = "frozen"
+        wsi_type: str = "frozen",
     ):
         super().__init__()
         self.csv = pd.read_csv(csv_path)
@@ -597,16 +613,20 @@ class IdilDataSet(Dataset):
 
         # Filter out unwanted tumor types
         self.csv = self.csv[self.csv["Tumor Type"] != "Oligoastrocytoma"]
-        
+
         # Replace grade values
-        self.csv["Neoplasm Histologic Grade"] = self.csv["Neoplasm Histologic Grade"].replace({"G2": "low grade glioma", "G3": "high grade glioma"})
-        
+        self.csv["Neoplasm Histologic Grade"] = self.csv[
+            "Neoplasm Histologic Grade"
+        ].replace({"G2": "low grade glioma", "G3": "high grade glioma"})
+
         # Replace IDH status values
-        self.csv["Subtype"] = self.csv["Subtype"].replace({
-            "LGG_IDHmut-non-codel": "IDH mutation",
-            "LGG_IDHmut-codel": "IDH mutation",
-            "LGG_IDHwt": "wild-type IDH"
-        })
+        self.csv["Subtype"] = self.csv["Subtype"].replace(
+            {
+                "LGG_IDHmut-non-codel": "IDH mutation",
+                "LGG_IDHmut-codel": "IDH mutation",
+                "LGG_IDHwt": "wild-type IDH",
+            }
+        )
 
         self.folder = folder
         self.magnification = magnification
@@ -622,7 +642,7 @@ class IdilDataSet(Dataset):
         self.patches = []
         self.load_patches()
         self.compute_weights()
-        
+
     def load_success_ids(self, feat_folder: str):
         success_ids = set()
         success_txt = f"{feat_folder}/success.txt"
@@ -655,7 +675,8 @@ class IdilDataSet(Dataset):
                     else:
                         indices = list(range(n_patches))
                     imgs = [
-                        Image.fromarray(h5f[str(self.magnification)][i]) for i in indices
+                        Image.fromarray(h5f[str(self.magnification)][i])
+                        for i in indices
                     ]
                     self.patches.append((imgs, slide_id))
                     self.labels.append(self.get_label(slide_id))
@@ -697,6 +718,7 @@ class IdilDataSet(Dataset):
         tumortype = metadata["Tumor Type"].values[0]
         prompt = f"a frozen brain histopathology slide of a {race.lower()}, {sex.lower()}, age {age}, has {IDHstatus.lower()}, {grade.lower()} of {tumortype.lower()}"
         return slide_id, imgs, label, prompt
+
 
 def collate_fn(examples, with_prior_preservation=False):
     input_ids = [example["instance_prompt_ids"] for example in examples]
@@ -751,11 +773,10 @@ def get_full_repo_name(
 
 def main(args):
     logging_dir = Path(args.output_dir, args.logging_dir)
-    #accelerator = Accelerator(mixed_precision=args.mixed_precision)
     print("Initializing Accelerator...")
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
-        mixed_precision=args.mixed_precision,
+        mixed_precision=args.mixed_precision,  # None,
         log_with=args.report_to,
         # logging_dir=logging_dir,
     )
@@ -763,8 +784,10 @@ def main(args):
 
     try:
         print(f"Loading tokenizer for model: {args.pretrained_model_name_or_path}")
-        #tokenizer = AutoTokenizer.from_pretrained(args.pretrained_model_name_or_path)
-        tokenizer = AutoTokenizer.from_pretrained("stabilityai/stable-diffusion-2-1-base", subfolder="tokenizer")
+        # tokenizer = AutoTokenizer.from_pretrained(args.pretrained_model_name_or_path)
+        tokenizer = AutoTokenizer.from_pretrained(
+            "stabilityai/stable-diffusion-2-1-base", subfolder="tokenizer"
+        )
         print("Tokenizer initialized.")
     except Exception as e:
         print(f"Error loading tokenizer: {e}")
@@ -772,7 +795,9 @@ def main(args):
 
     # Example of using UNet2DConditionModel
     try:
-        model = UNet2DConditionModel.from_pretrained(args.pretrained_model_name_or_path, subfolder="unet")
+        model = UNet2DConditionModel.from_pretrained(
+            args.pretrained_model_name_or_path, subfolder="unet"
+        )
         print("UNet2DConditionModel initialized.")
     except Exception as e:
         print(f"Error loading UNet2DConditionModel: {e}")
@@ -793,7 +818,6 @@ def main(args):
     except Exception as e:
         print(f"Error initializing AutoencoderKL: {e}")
         return
-
 
     if args.report_to == "wandb":
         if not is_wandb_available():
@@ -882,14 +906,6 @@ def main(args):
 
     # Handle the repository creation
 
-    import os
-    import torch
-    # from pathlib import Path
-    # from transformers import AutoTokenizer, DDPMScheduler, AutoencoderKL, UNet2DConditionModel
-    from huggingface_hub import create_repo, get_full_repo_name, Repository
-    # from accelerate import Accelerator
-    # from accelerate.utils import is_xformers_available
-
     if accelerator.is_main_process:
         if args.push_to_hub:
             if args.hub_model_id is None:
@@ -953,11 +969,10 @@ def main(args):
 
     # For mixed precision training we cast the text_encoder and vae weights to half-precision
     # as these models are only used for inference, keeping weights in full precision is not required.
-    if args.mixed_precision == 'fp16':
+    if args.mixed_precision == "fp16":
         weight_dtype = torch.float16
     else:
         weight_dtype = torch.float32
-
 
     # Move unet, vae and text_encoder to device and cast to weight_dtype
     unet.to(accelerator.device, dtype=weight_dtype)
@@ -1053,30 +1068,28 @@ def main(args):
         weight_decay=args.adam_weight_decay,
         eps=args.adam_epsilon,
     )
-    
-    import torch
 
     # Assuming args are parsed above this snippet
     # tokenizer = AutoTokenizer.from_pretrained(args.pretrained_model_name_or_path)
-    
+
     # Dataset and DataLoaders creation:
     train_dataset = IdilDataSet(
         csv_path=args.instance_data_dir,  # Using instance_data_dir for csv_path
-        folder=args.class_data_dir,       # Using class_data_dir for folder path
-        magnification=20,                 # Assuming a default magnification
+        folder=args.class_data_dir,  # Using class_data_dir for folder path
+        magnification=20,  # Assuming a default magnification
         transform=get_transforms(train=True),
         n_patches=2,
         random_selection=True,
         limit=10,
-        wsi_type="frozen"
+        wsi_type="frozen",
     )
-    
+
     print("=" * 100)
     print(args)
     print("=" * 100)
-    
+
     print(f"len(train_dataset) = {len(train_dataset)}")
-    
+
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=args.train_batch_size,
@@ -1084,10 +1097,8 @@ def main(args):
         collate_fn=None,  # Use default collate_fn or define if necessary
         num_workers=args.dataloader_num_workers,
     )
-    
+
     print(f"len(train_dataloader) = {len(train_dataloader)}")
-
-
 
     # Scheduler and math around the number of training steps.
     overrode_max_train_steps = False
@@ -1194,18 +1205,15 @@ def main(args):
                 continue
             slide_ids, imgs, labels, prompts = batch
 
-            
             with accelerator.accumulate(unet):
                 # shape is BATCH_SIZE, N_PATCHES; C, H, W
                 B, N, C, H, W = imgs.shape
                 # vae expects BATCH_SIZE, C, H, W
                 # thus we just reshape to BATCH_SIZE * N_PATCHES, C, H, W
-                imgs = imgs.reshape(B*N, C, H, W)
-                
+                imgs = imgs.reshape(B * N, C, H, W)
+
                 # Convert images to latent space
-                latents = vae.encode(
-                    imgs.to(dtype=weight_dtype)
-                ).latent_dist.sample()
+                latents = vae.encode(imgs.to(dtype=weight_dtype)).latent_dist.sample()
                 latents = latents * 0.18215
 
                 # Sample noise that we'll add to the latents
