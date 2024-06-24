@@ -517,6 +517,9 @@ from glob import glob
 from typing import Callable, Optional, List
 
 
+
+
+
 def get_transforms(train=False):
     """
     Takes a list of images and applies the same augmentations to all of them.
@@ -574,6 +577,8 @@ def get_transforms(train=False):
             return transformed_images[0]
         return transformed_images
     return transform_images
+
+
     
 class IdilDataSet(Dataset):
     """
@@ -657,8 +662,8 @@ class IdilDataSet(Dataset):
                     imgs = [
                         Image.fromarray(h5f[str(self.magnification)][i]) for i in indices
                     ]
-                    self.patches.append((imgs, slide_id))
-                    self.labels.append(self.get_label(slide_id))
+                    for img in imgs:
+                        self.patches.append((img, slide_id, self.get_label(slide_id)))
             except Exception as e:
                 pass
 
@@ -685,8 +690,8 @@ class IdilDataSet(Dataset):
         self.weights = [class_weights[label] for label in self.labels]
 
     def __getitem__(self, idx):
-        imgs, slide_id = self.patches[idx]
-        imgs = torch.stack([self.transform(img) for img in imgs])
+        img, slide_id, label = self.patches[idx]
+        img = self.transform(img)
         label = self.get_label(slide_id)
         metadata = self.get_metadata(slide_id)
         age = metadata["Diagnosis Age"].values[0]
@@ -696,7 +701,7 @@ class IdilDataSet(Dataset):
         IDHstatus = metadata["Subtype"].values[0]
         tumortype = metadata["Tumor Type"].values[0]
         prompt = f"a frozen brain histopathology slide of a {race.lower()}, {sex.lower()}, age {age}, has {IDHstatus.lower()}, {grade.lower()} of {tumortype.lower()}"
-        return slide_id, imgs, label, prompt
+        return slide_id, img, label, prompt
 
 def collate_fn(examples, with_prior_preservation=False):
     input_ids = [example["instance_prompt_ids"] for example in examples]
@@ -1064,10 +1069,10 @@ def main(args):
         csv_path=args.instance_data_dir,  # Using instance_data_dir for csv_path
         folder=args.class_data_dir,       # Using class_data_dir for folder path
         magnification=20,                 # Assuming a default magnification
-        transform=get_transforms(train=True),
-        n_patches=2,
+        transform=get_transforms(train=False),
+        n_patches=50,
         random_selection=True,
-        limit=10,
+        limit=None,
         wsi_type="frozen"
     )
     
@@ -1193,14 +1198,11 @@ def main(args):
                     progress_bar.update(1)
                 continue
             slide_ids, imgs, labels, prompts = batch
+            # flatten the prompts 
 
-            
             with accelerator.accumulate(unet):
                 # shape is BATCH_SIZE, N_PATCHES; C, H, W
-                B, N, C, H, W = imgs.shape
-                # vae expects BATCH_SIZE, C, H, W
-                # thus we just reshape to BATCH_SIZE * N_PATCHES, C, H, W
-                imgs = imgs.reshape(B*N, C, H, W)
+                B, C, H, W = imgs.shape
                 
                 # Convert images to latent space
                 latents = vae.encode(
@@ -1225,9 +1227,14 @@ def main(args):
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
 
                 # Get the text embedding for conditioning
-                encoder_hidden_states = text_encoder(batch["input_ids"])[0]
+                inputs = tokenizer(prompts, padding=True, return_tensors="pt")
+                encoder_hidden_states = text_encoder(inputs["input_ids"].to("cuda"))[0]
 
                 # Predict the noise residual
+                #print("noisy_latents.shape", noisy_latents.shape)
+                #print("timesteps.shape", timesteps.shape)
+                #print("encoder_hidden_states.shape", encoder_hidden_states.shape)
+                
                 model_pred = unet(
                     noisy_latents, timesteps, encoder_hidden_states
                 ).sample
