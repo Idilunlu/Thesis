@@ -29,6 +29,7 @@ This repository contains the code and resources used for the master's thesis tit
 ## Results
 
 The project demonstrates that:
-1. Synthetic data augmentation improves classification accuracy for imbalanced tasks like IDH mutation status prediction and tumor grading.
-2. Weighted prompting and upscaling with DDPM resulted in successful generated images.
+1. Synthetic data augmentation marginally improves classification accuracy for imbalanced tasks like IDH mutation status prediction and tumor grading when it constitutes 10-25% of the complete dataset
+2. Weighted prompting improves the generation quality.
+3. Upscaling with LDMs are not satisfactory, DDPMs are preferred despite the computational expense
 
