@@ -23,6 +23,7 @@ This repository contains the code and resources used for the master's thesis tit
 ### Evaluation
 1. Evaluate generated images using notebooks in `Metrics/`.
 2. Analyze metrics to compare synthetic data quality with real data.
+3. Use data to train `point_estimator.ipynb`
 
 
 ## Results
